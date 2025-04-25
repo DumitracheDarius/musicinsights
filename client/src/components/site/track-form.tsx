@@ -43,7 +43,7 @@ export function TrackForm() {
 
   const mutation = useMutation({
     mutationFn: async (values: TrackFormValues) => {
-      const res = await apiRequest('POST', '/api/scrape', {
+      const res = await apiRequest('POST', 'https://willowy-tapioca-e99011.netlify.app/.netlify/functions/scrape', {
         song_name: values.song_name,
         artist: values.artist
       });
