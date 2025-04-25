@@ -4,25 +4,26 @@ import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Route to handle the scrape request
-  app.post("/scrape", (req, res) => {
+  app.post("/scrape", async (req, res) => {
     const { song_name, artist } = req.body;
-    
-    // Validate request
-    if (!song_name || !artist) {
-      return res.status(400).json({ 
-        message: "Song name and artist are required" 
-      });
-    }
-    
-    // Return success response
-    // In a real implementation, this would trigger the scraping process
-    return res.status(200).json({ 
-      message: "Scraping started successfully", 
-      song: song_name, 
-      artist: artist 
-    });
-  });
 
+    if (!song_name || !artist) {
+      return res.status(400).json({ message: "Song name and artist are required" });
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ song_name, artist }).toString(),
+      });
+
+      const data = await response.json();
+      return res.status(200).json(data);
+    } catch (error) {
+      return res.status(500).json({ message: "Error forwarding to Java backend", error });
+    }
+  });
   const httpServer = createServer(app);
 
   return httpServer;

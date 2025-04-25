@@ -1,0 +1,8 @@
+[build]
+functions = "netlify/functions"
+publish = "dist" # sau "build", depinde de Vite/React
+
+[[redirects]]
+from = "/api/scrape"
+to = "/.netlify/functions/scrape"
+status = 200

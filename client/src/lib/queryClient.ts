@@ -8,20 +8,22 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
+    method: string,
+    url: string,
+    data?: unknown | undefined,
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
+    mode: "cors", // 🔥 adăugat aici
+    credentials: "include", // 🔥 necesar pentru cookie-uri sau CORS cu origine diferită
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
   });
 
   await throwIfResNotOk(res);
   return res;
 }
+
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {
