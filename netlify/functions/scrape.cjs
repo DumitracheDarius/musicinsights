@@ -1,11 +1,11 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = require("node-fetch");
 
-exports.handler = async function(event, context) {
+exports.handler = async function (event, context) {
     try {
         const body = JSON.parse(event.body);
         const { song_name, artist } = body;
 
-        const res = await fetch(`http://YOUR_DROPLET_IP:8000/scrape`, {
+        const res = await fetch("http://139.59.140.159:8000/scrape", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ song_name, artist }),
