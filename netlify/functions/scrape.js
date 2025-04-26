@@ -1,6 +1,4 @@
-const fetch = require("node-fetch");
-
-exports.handler = async function (event, context) {
+export async function handler(event, context) {
     try {
         const body = JSON.parse(event.body);
         const { song_name, artist } = body;
@@ -23,4 +21,4 @@ exports.handler = async function (event, context) {
             body: JSON.stringify({ error: err.message }),
         };
     }
-};
+}
