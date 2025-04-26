@@ -1,31 +1,26 @@
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
-exports.handler = async function(event) {
-    if (event.httpMethod !== "POST") {
-        return {
-            statusCode: 405,
-            body: "Method Not Allowed"
-        };
-    }
-
+exports.handler = async function(event, context) {
     try {
         const body = JSON.parse(event.body);
+        const { song_name, artist } = body;
 
-        const response = await fetch("http://139.59.140.159:8000/scrape", {
+        const res = await fetch(`http://YOUR_DROPLET_IP:8000/scrape`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+            body: JSON.stringify({ song_name, artist }),
         });
 
-        const data = await response.text(); // nu .json() ca să evităm erori
+        const data = await res.json();
+
         return {
             statusCode: 200,
-            body: data
+            body: JSON.stringify(data),
         };
     } catch (err) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: err.message })
+            body: JSON.stringify({ error: err.message }),
         };
     }
 };
