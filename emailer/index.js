@@ -1,49 +1,66 @@
-// emailer/index.js
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-require("dotenv").config();
-
-const { uploadToImgur } = require("./uploadToImgur");
-const { sendEmail } = require("./sendEmail");
+import express from 'express';
+import cors from 'cors';
+import fetch from 'node-fetch';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(express.json());
 
-app.post("/send-report", async (req, res) => {
-    const data = req.body;
+const allowedOrigin = "https://willowy-tapioca-e99011.netlify.app";
 
+app.use(cors({
+    origin: allowedOrigin,
+    credentials: true
+}));
+
+// Redirecționare pentru scraping
+app.post('/scrape', async (req, res) => {
     try {
-        // Upload images + CSV
-        const spotonImg = await uploadToImgur(data.spotontrack_image_base64);
-        const mediaforestImg = await uploadToImgur(data.mediaforest_image_base64);
-        const fs = require("fs");
-        const path = require("path");
-
-        const sanitizedSong = data.song_name.replace(/\s+/g, "_");
-        const sanitizedArtist = data.artist.replace(/\s+/g, "_");
-        const csvPath = path.join("C:/Users/dumit/Desktop/Records Scrapers", `${sanitizedSong}_${sanitizedArtist}_tiktok.csv`);
-        const tiktokCsvBase64 = fs.existsSync(csvPath)
-            ? fs.readFileSync(csvPath, { encoding: "base64" })
-            : "";
-
-
-        await sendEmail({
-            ...data,
-            spotontrack_image_url: spotonImg,
-            mediaforest_image_url: mediaforestImg,
-            tiktok_csv_url: tiktokCsvBase64
+        const response = await fetch('http://139.59.140.159:8000/scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body)
         });
 
-        res.json({ status: "ok" });
-    } catch (err) {
-        console.error("Eroare la procesarea emailului:", err);
-        res.status(500).send("Fail");
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        console.error('Error forwarding request:', error);
+        res.status(500).json({ error: 'Failed to forward request' });
     }
 });
 
-const PORT = 5001;
+// Redirecționare pentru imagini
+app.get('/images/:filename', async (req, res) => {
+    const { filename } = req.params;
+    try {
+        const response = await fetch(`http://139.59.140.159:8000/images/${filename}`);
+        const buffer = await response.buffer();
+        res.set('Content-Type', 'image/png');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).send('Failed to fetch image');
+    }
+});
+
+// Redirecționare pentru download CSV
+app.get('/download', async (req, res) => {
+    const { song, artist } = req.query;
+    try {
+        const response = await fetch(`http://139.59.140.159:8000/download?song=${encodeURIComponent(song)}&artist=${encodeURIComponent(artist)}`);
+        const buffer = await response.buffer();
+        res.set('Content-Type', 'text/csv');
+        res.set('Content-Disposition', `attachment; filename="${song}_${artist}_tiktok.csv"`);
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error fetching CSV:', error);
+        res.status(500).send('Failed to fetch CSV');
+    }
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Email backend running on http://localhost:${PORT}`);
+    console.log(`Proxy server running on port ${PORT}`);
 });
