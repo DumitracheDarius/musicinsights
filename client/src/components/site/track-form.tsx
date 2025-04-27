@@ -53,16 +53,16 @@ export function TrackForm() {
       if (data.spotontrack?.spotontrack_spotify_image) {
         data.spotontrack.spotontrack_spotify_image = data.spotontrack.spotontrack_spotify_image.replace(
             "http://localhost:8000/images/",
-            "http://139.59.140.159:8000/images/"
+            "https://expresserverjs.onrender.com/images/"
         );
       }
-
       if (data.mediaforest?.mediaforest_image_url) {
         data.mediaforest.mediaforest_image_url = data.mediaforest.mediaforest_image_url.replace(
             "http://localhost:8000/images/",
-            "http://139.59.140.159:8000/images/"
+            "https://expresserverjs.onrender.com/images/"
         );
       }
+
 
       setScrapeResult(data);
       form.reset();
