@@ -106,7 +106,7 @@ export function TrackForm() {
       const tiktokCsvBase64 = scrapeResult.tiktok_csv_base64 || "";
 
 
-      await fetch("https://musicinsight-emailer.onrender.com", {
+      await fetch("https://musicinsight-emailer.onrender.com/send-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
