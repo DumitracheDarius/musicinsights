@@ -50,11 +50,27 @@ export function TrackForm() {
       return res.json();
     },
     onSuccess: (data) => {
+      // Dacă există spotontrack image, înlocuim localhost cu proxyul nostru
+      if (data.spotontrack?.spotontrack_spotify_image) {
+        data.spotontrack.spotontrack_spotify_image = data.spotontrack.spotontrack_spotify_image.replace(
+            "http://localhost:8000/images/",
+            "https://expresserverjs.onrender.com/images/"
+        );
+      }
+
+      if (data.mediaforest?.mediaforest_image_url) {
+        data.mediaforest.mediaforest_image_url = data.mediaforest.mediaforest_image_url.replace(
+            "http://localhost:8000/images/",
+            "https://expresserverjs.onrender.com/images/"
+        );
+      }
+
       setScrapeResult(data);
       form.reset();
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 5000);
     },
+
     onError: () => {
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 5000);
