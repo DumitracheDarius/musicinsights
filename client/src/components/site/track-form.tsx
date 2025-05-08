@@ -17,6 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer
+} from "recharts";
 
 const trackFormSchema = z.object({
   song_name: z.string().min(1, "Song name is required"),
@@ -63,13 +66,11 @@ export function TrackForm() {
         );
       }
 
-
       setScrapeResult(data);
       form.reset();
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 5000);
     },
-
     onError: () => {
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 5000);
@@ -105,7 +106,6 @@ export function TrackForm() {
 
       const tiktokCsvBase64 = scrapeResult.tiktok_csv_base64 || "";
 
-
       await fetch("https://musicinsight-emailer.onrender.com/send-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,6 +130,30 @@ export function TrackForm() {
       alert("Something went wrong when sending the email.");
     }
   };
+
+  type ChartSectionProps = {
+    title: string;
+    data: Array<Record<string, any>>;
+    dataKey: string;
+  };
+
+  const ChartSection: React.FC<ChartSectionProps> = ({ title, data, dataKey }) => (
+      <div className="mt-4">
+        <h4 className="font-semibold mb-2">{title}</h4>
+        <div className="bg-neutral-800 p-3 rounded-lg">
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+              <XAxis dataKey="timestamp" tick={{ fill: "#ccc", fontSize: 10 }} />
+              <YAxis tick={{ fill: "#ccc" }} />
+              <Tooltip contentStyle={{ backgroundColor: "#333", border: "none" }} />
+              <Line type="monotone" dataKey={dataKey} stroke="#00E4B3" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+  );
+
 
   return (
       <div className="w-full max-w-md mx-auto relative">
@@ -194,20 +218,39 @@ export function TrackForm() {
                       <div>
                         <strong>YouTube</strong><br />
                         Title: {scrapeResult.youtube["Youtube title"]}<br />
-                        Views: {scrapeResult.youtube["Youtube views"]}
+                        Views: {scrapeResult.youtube["Youtube views"]}<br />
+                        Difference since last check: {scrapeResult.youtube["Difference since last check"]}<br />
+                        Daily average (today): {scrapeResult.youtube["Daily average (today)"]}<br />
+                        Weekly average (last 7 days): {scrapeResult.youtube["Weekly average (last 7 days)"]}
+                        {scrapeResult.youtube["Chart data"] && (
+                            <ChartSection title="YouTube Views Over Time" data={scrapeResult.youtube["Chart data"]} dataKey="views" />
+                        )}
                       </div>
                   )}
                   {scrapeResult.spotify && (
                       <div>
                         <strong>Spotify</strong><br />
                         Title: {scrapeResult.spotify["Spotify title"]}<br />
-                        Streams: {scrapeResult.spotify["Spotify streams"]}
+                        Streams: {scrapeResult.spotify["Spotify streams"]}<br />
+                        Difference since last check: {scrapeResult.spotify["Streams difference since last check"]}<br />
+                        Daily average (today): {scrapeResult.spotify["Daily average (today)"]}<br />
+                        Weekly average (last 7 days): {scrapeResult.spotify["Weekly average (last 7 days)"]}
+                        {scrapeResult.spotify["Chart data"] && (
+                            <ChartSection title="Spotify Streams Over Time" data={scrapeResult.spotify["Chart data"]} dataKey="streams" />
+                        )}
                       </div>
                   )}
                   {scrapeResult.shazam && (
                       <div>
                         <strong>Shazam</strong><br />
-                        Count: {scrapeResult.shazam["Shazam count"]}
+                        Title: {scrapeResult.shazam["Shazam title"]}<br />
+                        Count: {scrapeResult.shazam["Shazam count"]}<br />
+                        Difference since last check: {scrapeResult.shazam["Difference since last check"]}<br />
+                        Daily average (today): {scrapeResult.shazam["Daily average (today)"]}<br />
+                        Weekly average (last 7 days): {scrapeResult.shazam["Weekly average (last 7 days)"]}
+                        {scrapeResult.shazam["Chart data"] && (
+                            <ChartSection title="Shazam Counts Over Time" data={scrapeResult.shazam["Chart data"]} dataKey="shazamCount" />
+                        )}
                       </div>
                   )}
                   {scrapeResult.chartex && (
@@ -245,3 +288,8 @@ export function TrackForm() {
       </div>
   );
 }
+
+
+
+
+
