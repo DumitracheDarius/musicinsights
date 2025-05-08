@@ -112,11 +112,24 @@ export function TrackForm() {
         body: JSON.stringify({
           song_name: scrapeResult.song,
           artist: scrapeResult.artist,
-          youtube_title: scrapeResult.youtube?.["Youtube title"] || "-",
-          youtube_views: scrapeResult.youtube?.["Youtube views"] || "-",
           spotify_title: scrapeResult.spotify?.["Spotify title"] || "-",
           spotify_streams: scrapeResult.spotify?.["Spotify streams"] || "-",
+          spotify_diff: scrapeResult.spotify?.["Streams difference since last check"] || "-",
+          spotify_daily_avg: scrapeResult.spotify?.["Daily average (today)"] || "-",
+          spotify_weekly_avg: scrapeResult.spotify?.["Weekly average (last 7 days)"] || "-",
+
+          shazam_title: scrapeResult.shazam?.["Shazam title"] || "-",
           shazam_count: scrapeResult.shazam?.["Shazam count"] || "-",
+          shazam_diff: scrapeResult.shazam?.["Difference since last check"] || "-",
+          shazam_daily_avg: scrapeResult.shazam?.["Daily average (today)"] || "-",
+          shazam_weekly_avg: scrapeResult.shazam?.["Weekly average (last 7 days)"] || "-",
+
+          youtube_title: scrapeResult.youtube?.["Youtube title"] || "-",
+          youtube_views: scrapeResult.youtube?.["Youtube views"] || "-",
+          youtube_diff: scrapeResult.youtube?.["Difference since last check"] || "-",
+          youtube_daily_avg: scrapeResult.youtube?.["Daily average (today)"] || "-",
+          youtube_weekly_avg: scrapeResult.youtube?.["Weekly average (last 7 days)"] || "-",
+
           chartex_stats: scrapeResult.chartex?.chartexStats || "-",
           spotontrack_image_base64: spotontrackImageBase64,
           mediaforest_image_base64: mediaforestImageBase64,
