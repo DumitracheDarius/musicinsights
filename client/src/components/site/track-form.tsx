@@ -23,6 +23,7 @@ import {
 
 const trackFormSchema = z.object({
   song_name: z.string().min(1, "Song name is required"),
+  song_name_diacritics: z.string().optional(),
   artist: z.string().min(1, "Artist name is required")
 });
 
@@ -31,6 +32,7 @@ type TrackFormValues = z.infer<typeof trackFormSchema>;
 export function TrackForm() {
   const [successMessage, setSuccessMessage] = useState(false);
   const [scrapeResult, setScrapeResult] = useState<any | null>(null);
+  const [showDiacritics, setShowDiacritics] = useState(false);
 
   const getCsvDownloadUrl = (song: string, artist: string) => {
     return `https://expresserverjs.onrender.com/download?song=${encodeURIComponent(song)}&artist=${encodeURIComponent(artist)}`;
@@ -40,6 +42,7 @@ export function TrackForm() {
     resolver: zodResolver(trackFormSchema),
     defaultValues: {
       song_name: "",
+      song_name_diacritics: "",
       artist: ""
     }
   });
@@ -48,6 +51,7 @@ export function TrackForm() {
     mutationFn: async (values: TrackFormValues) => {
       const res = await apiRequest('POST', 'https://expresserverjs.onrender.com/scrape', {
         song_name: values.song_name,
+        song_name_diacritics: values.song_name_diacritics || "",
         artist: values.artist
       });
       return res.json();
@@ -193,6 +197,39 @@ export function TrackForm() {
                         </FormItem>
                     )}
                 />
+
+                <div className="flex justify-end">
+                  <Button 
+                    type="button" 
+                    onClick={() => setShowDiacritics(!showDiacritics)}
+                    variant={showDiacritics ? "default" : "outline"}
+                    size="sm" 
+                    className="mt-1 text-xs"
+                  >
+                    {showDiacritics ? "✓ " : ""}Titlul conține diacritice pe anumite platforme?
+                  </Button>
+                </div>
+
+                {showDiacritics && (
+                  <FormField
+                    control={form.control}
+                    name="song_name_diacritics"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="text-sm font-medium text-neutral-300">Song Name (cu diacritice)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="Introdu titlul cu diacritice (ex: Așa)" 
+                            className="bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 focus:border-accent focus:ring-accent/30" 
+                            required={showDiacritics}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                     control={form.control}
