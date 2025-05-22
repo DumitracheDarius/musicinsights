@@ -103,7 +103,10 @@ export function TrackForm() {
         return new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => {
-            const base64data = (reader.result as string).split(",")[1];
+            // Get the full base64 string including the data:image part
+            const fullBase64 = reader.result as string;
+            // Extract just the base64 part after the comma
+            const base64data = fullBase64.split(',')[1];
             console.log(`✅ Successfully converted image to base64 (${base64data.length} chars)`);
             resolve(base64data);
           };
@@ -144,6 +147,9 @@ export function TrackForm() {
         csvLength: tiktokCsvBase64.length
       });
 
+      // Test a tiny embedded image to verify base64 functionality
+      const testImageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="; // Red dot image
+      
       const response = await fetch("https://musicinsight-emailer.onrender.com/send-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,13 +177,15 @@ export function TrackForm() {
           chartex_stats: scrapeResult.chartex?.chartexStats || "-",
           totalTikTokVideos: scrapeResult.chartex?.totalTikTokVideos || "-",
           totalTikTokViews: scrapeResult.chartex?.totalTikTokViews || "-",
-          totalTikTokLikes: scrapeResult.chartex?.totalTikTokLikes || "-",
+          totalTikTokLikes: scrapeResult.chartex?.totalTikTokLikes || "-", 
           totalTikTokComments: scrapeResult.chartex?.totalTikTokComments || "-",
           totalTikTokShares: scrapeResult.chartex?.totalTikTokShares || "-",
           
           spotontrack_image_base64: spotontrackImageBase64,
           mediaforest_image_base64: mediaforestImageBase64,
-          tiktok_csv_base64: tiktokCsvBase64
+          tiktok_csv_base64: tiktokCsvBase64,
+          // Include test image to verify base64 handling
+          test_image_base64: testImageBase64
         })
       });
       
