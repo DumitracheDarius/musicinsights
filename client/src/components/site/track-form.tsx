@@ -137,6 +137,12 @@ export function TrackForm() {
           youtube_weekly_avg: scrapeResult.youtube?.["Weekly average (last 7 days)"] || "-",
 
           chartex_stats: scrapeResult.chartex?.chartexStats || "-",
+          totalTikTokVideos: scrapeResult.chartex?.totalTikTokVideos || "-",
+          totalTikTokViews: scrapeResult.chartex?.totalTikTokViews || "-",
+          totalTikTokLikes: scrapeResult.chartex?.totalTikTokLikes || "-",
+          totalTikTokComments: scrapeResult.chartex?.totalTikTokComments || "-",
+          totalTikTokShares: scrapeResult.chartex?.totalTikTokShares || "-",
+          
           spotontrack_image_base64: spotontrackImageBase64,
           mediaforest_image_base64: mediaforestImageBase64,
           tiktok_csv_base64: tiktokCsvBase64
