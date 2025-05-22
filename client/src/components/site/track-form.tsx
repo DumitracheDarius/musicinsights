@@ -90,66 +90,22 @@ export function TrackForm() {
   const sendEmailReport = async () => {
     if (!scrapeResult) return;
 
-    const toBase64 = async (url: string) => {
-      try {
-        console.log(`🔄 Converting image to base64: ${url}`);
-        const response = await fetch(url);
-        if (!response.ok) {
-          console.error(`❌ Failed to fetch image: ${url} (${response.status})`);
-          return "";
-        }
-        
-        const blob = await response.blob();
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            // Get the full base64 string including the data:image part
-            const fullBase64 = reader.result as string;
-            // Extract just the base64 part after the comma
-            const base64data = fullBase64.split(',')[1];
-            console.log(`✅ Successfully converted image to base64 (${base64data.length} chars)`);
-            resolve(base64data);
-          };
-          reader.onerror = (error) => {
-            console.error(`❌ Error reading blob: ${error}`);
-            reject(error);
-          };
-          reader.readAsDataURL(blob);
-        });
-      } catch (error) {
-        console.error(`❌ Error converting image to base64: ${error}`);
-        return "";
-      }
-    };
-
     try {
-      console.log("📤 Preparing to send email report...");
+      console.log("📤 Preparing to send email report with direct URLs...");
       
-      // Get spotontrack image
-      let spotontrackImageBase64 = "";
-      if (scrapeResult.spotontrack?.spotontrack_spotify_image) {
-        console.log(`🔍 Found spotontrack image URL: ${scrapeResult.spotontrack.spotontrack_spotify_image}`);
-        spotontrackImageBase64 = await toBase64(scrapeResult.spotontrack.spotontrack_spotify_image);
-      }
-
-      // Get mediaforest image
-      let mediaforestImageBase64 = "";
-      if (scrapeResult.mediaforest?.mediaforest_image_url) {
-        console.log(`🔍 Found mediaforest image URL: ${scrapeResult.mediaforest.mediaforest_image_url}`);
-        mediaforestImageBase64 = await toBase64(scrapeResult.mediaforest.mediaforest_image_url);
-      }
-
-      const tiktokCsvBase64 = scrapeResult.tiktok_csv_base64 || "";
+      // Get the direct image URLs
+      const spotontrackDirectUrl = scrapeResult.spotontrack?.spotontrack_spotify_image || "";
+      const mediaforestDirectUrl = scrapeResult.mediaforest?.mediaforest_image_url || "";
+      
+      // Generate the TikTok CSV URL
+      const tiktokCsvDirectUrl = getCsvDownloadUrl(scrapeResult.song, scrapeResult.artist);
       
       console.log({
-        spotontrackLength: spotontrackImageBase64.length,
-        mediaforestLength: mediaforestImageBase64.length,
-        csvLength: tiktokCsvBase64.length
+        spotontrackUrl: spotontrackDirectUrl,
+        mediaforestUrl: mediaforestDirectUrl,
+        tiktokCsvUrl: tiktokCsvDirectUrl
       });
 
-      // Test a tiny embedded image to verify base64 functionality
-      const testImageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="; // Red dot image
-      
       const response = await fetch("https://musicinsight-emailer.onrender.com/send-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,11 +137,10 @@ export function TrackForm() {
           totalTikTokComments: scrapeResult.chartex?.totalTikTokComments || "-",
           totalTikTokShares: scrapeResult.chartex?.totalTikTokShares || "-",
           
-          spotontrack_image_base64: spotontrackImageBase64,
-          mediaforest_image_base64: mediaforestImageBase64,
-          tiktok_csv_base64: tiktokCsvBase64,
-          // Include test image to verify base64 handling
-          test_image_base64: testImageBase64
+          // Send direct URLs instead of base64
+          spotontrack_direct_url: spotontrackDirectUrl,
+          mediaforest_direct_url: mediaforestDirectUrl,
+          tiktok_csv_direct_url: tiktokCsvDirectUrl
         })
       });
       
