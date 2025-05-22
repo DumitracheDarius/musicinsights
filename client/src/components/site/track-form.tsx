@@ -49,6 +49,8 @@ export function TrackForm() {
 
   const mutation = useMutation({
     mutationFn: async (values: TrackFormValues) => {
+      setScrapeResult(null);
+      
       const res = await apiRequest('POST', 'https://expresserverjs.onrender.com/scrape', {
         song_name: values.song_name,
         song_name_diacritics: values.song_name_diacritics || "",
@@ -307,6 +309,35 @@ export function TrackForm() {
                       <div>
                         <strong>Chartex</strong>
                         <p className="mt-2">Stats: {scrapeResult.chartex.chartexStats}</p>
+                        
+                        {scrapeResult.chartex.totalTikTokVideos && (
+                          <div className="mt-2 p-3 bg-neutral-800 rounded-lg">
+                            <h4 className="font-semibold mb-2">TikTok Lifetime Statistics</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="p-2 bg-neutral-700 rounded">
+                                <span className="block text-xs text-neutral-400">Total Videos</span>
+                                <span className="text-lg font-medium">{scrapeResult.chartex.totalTikTokVideos}</span>
+                              </div>
+                              <div className="p-2 bg-neutral-700 rounded">
+                                <span className="block text-xs text-neutral-400">Total Views</span>
+                                <span className="text-lg font-medium">{scrapeResult.chartex.totalTikTokViews}</span>
+                              </div>
+                              <div className="p-2 bg-neutral-700 rounded">
+                                <span className="block text-xs text-neutral-400">Total Likes</span>
+                                <span className="text-lg font-medium">{scrapeResult.chartex.totalTikTokLikes}</span>
+                              </div>
+                              <div className="p-2 bg-neutral-700 rounded">
+                                <span className="block text-xs text-neutral-400">Total Comments</span>
+                                <span className="text-lg font-medium">{scrapeResult.chartex.totalTikTokComments}</span>
+                              </div>
+                              <div className="p-2 bg-neutral-700 rounded col-span-2">
+                                <span className="block text-xs text-neutral-400">Total Shares</span>
+                                <span className="text-lg font-medium">{scrapeResult.chartex.totalTikTokShares}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
                         <a href={getCsvDownloadUrl(scrapeResult.song, scrapeResult.artist)} download className="inline-block mt-4 bg-accent text-white text-sm px-4 py-2 rounded hover:bg-accent/90 transition">
                           Download TikTok CSV
                         </a>
