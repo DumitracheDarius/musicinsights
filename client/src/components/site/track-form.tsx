@@ -91,28 +91,60 @@ export function TrackForm() {
     if (!scrapeResult) return;
 
     const toBase64 = async (url: string) => {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+      try {
+        console.log(`🔄 Converting image to base64: ${url}`);
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.error(`❌ Failed to fetch image: ${url} (${response.status})`);
+          return "";
+        }
+        
+        const blob = await response.blob();
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64data = (reader.result as string).split(",")[1];
+            console.log(`✅ Successfully converted image to base64 (${base64data.length} chars)`);
+            resolve(base64data);
+          };
+          reader.onerror = (error) => {
+            console.error(`❌ Error reading blob: ${error}`);
+            reject(error);
+          };
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error(`❌ Error converting image to base64: ${error}`);
+        return "";
+      }
     };
 
     try {
-      const spotontrackImageBase64 = scrapeResult.spotontrack?.spotontrack_spotify_image
-          ? await toBase64(scrapeResult.spotontrack.spotontrack_spotify_image)
-          : "";
+      console.log("📤 Preparing to send email report...");
+      
+      // Get spotontrack image
+      let spotontrackImageBase64 = "";
+      if (scrapeResult.spotontrack?.spotontrack_spotify_image) {
+        console.log(`🔍 Found spotontrack image URL: ${scrapeResult.spotontrack.spotontrack_spotify_image}`);
+        spotontrackImageBase64 = await toBase64(scrapeResult.spotontrack.spotontrack_spotify_image);
+      }
 
-      const mediaforestImageBase64 = scrapeResult.mediaforest?.mediaforest_image_url
-          ? await toBase64(scrapeResult.mediaforest.mediaforest_image_url)
-          : "";
+      // Get mediaforest image
+      let mediaforestImageBase64 = "";
+      if (scrapeResult.mediaforest?.mediaforest_image_url) {
+        console.log(`🔍 Found mediaforest image URL: ${scrapeResult.mediaforest.mediaforest_image_url}`);
+        mediaforestImageBase64 = await toBase64(scrapeResult.mediaforest.mediaforest_image_url);
+      }
 
       const tiktokCsvBase64 = scrapeResult.tiktok_csv_base64 || "";
+      
+      console.log({
+        spotontrackLength: spotontrackImageBase64.length,
+        mediaforestLength: mediaforestImageBase64.length,
+        csvLength: tiktokCsvBase64.length
+      });
 
-      await fetch("https://musicinsight-emailer.onrender.com/send-report", {
+      const response = await fetch("https://musicinsight-emailer.onrender.com/send-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -148,7 +180,13 @@ export function TrackForm() {
           tiktok_csv_base64: tiktokCsvBase64
         })
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      }
 
+      console.log("📧 Email sent successfully!");
       alert("✅ Email sent successfully!");
     } catch (err) {
       console.error("❌ Failed to send email:", err);
